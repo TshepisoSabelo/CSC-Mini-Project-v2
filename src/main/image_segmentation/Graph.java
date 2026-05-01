@@ -1,7 +1,7 @@
 package image_segmentation;
 import datastructures.UnionFind;
+import datastructures.ArrayList;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.math.*;
 
@@ -15,7 +15,7 @@ import java.math.*;
 public class Graph {
 	private Pixel[][] image;
 	private ArrayList<Edge> edges;
-	private List<SuperPixel> segments;
+	private ArrayList<SuperPixel> segments;
 	int width;
 	int height;
 	
@@ -44,7 +44,7 @@ public class Graph {
 		for(int i = 0; i< width; i++) {
 			for(int j = 0; j<height; j++) {
 				SuperPixel segment = new SuperPixel(image[i][j]);
-				segments.add(segment);
+				segments.addlast(segment);
 			}
 		}
 	}
@@ -68,7 +68,7 @@ public class Graph {
 		            double w = diff(image[x][y], image[x+1][y]);
 		            Edge edge = new Edge(id1, id2);
 		            edge.setWeight(w);
-		            edges.add(edge);
+		            edges.addlast(edge);
 		        }
 		        
 		        //Add down node
@@ -77,12 +77,12 @@ public class Graph {
 		            double w = diff(image[x][y], image[x][y+1]);
 		            Edge edge = new Edge(id1, id2);
 		            edge.setWeight(w);
-		            edges.add(edge);
+		            edges.addlast(edge);
 		        }
 			}
 		}
-		Collections.sort(edges);
-		Collections.reverse(edges);
+		
+		edges.sort();
 	}
 	
 /**
@@ -106,7 +106,7 @@ public class Graph {
 				if(S.find(vertices[0])) {
 					S1 = S;
 				}
-				if(S.find(vertices[0])) {
+				if(S.find(vertices[1])) {
 					S2 = S;
 				}
 			}
@@ -139,6 +139,8 @@ public class Graph {
 			segments.remove(S2);
 		}
 	}
+
+	################helper methods################
 	
 	/**
 	 * Computes the minimum connecting edge weight between two segments.
@@ -156,11 +158,12 @@ public class Graph {
 			for(Pixel s2_pixel: S2_pixels) {
 				if (isEdge(s1_pixel, s2_pixel) != -1) {
 					int index  = isEdge(s1_pixel, s2_pixel);
-					weights.add(edges.get(index).getWeight());
+					weights.addlast(edges.get(index).getWeight());
 				}
 			}
 		}
-		Collections.reverse(weights);
+		
+		weights.reverse();
 		double minWeight = weights.get(0);
 		return minWeight;
 	}
@@ -187,7 +190,7 @@ public class Graph {
 	 * @return threshold adjustment based on the segment size
 	 */
 	private double threshold(SuperPixel S) {
-		return (1 / S.getSize());
+		return (1.0 / S.size());
 	}
 	
 	/**

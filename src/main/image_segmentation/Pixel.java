@@ -8,6 +8,16 @@ public class Pixel {
 
     /**
      * Constructs a new Pixel.
+     * Initializes the pixel with default values (0, 0) for coordinates and (0, 0, 0) for RGB.
+     */
+    public Pixel() {
+        this.x = 0;
+        this.y = 0;
+        this.ID = 0;
+        this.RGB = new int[]{0, 0, 0};
+    }
+    /**
+     * Constructs a new Pixel.
      *
      * @param x the x coordinate of the pixel
      * @param y the y coordinate of the pixel
