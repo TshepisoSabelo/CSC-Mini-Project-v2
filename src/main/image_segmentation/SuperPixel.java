@@ -24,6 +24,8 @@ public class SuperPixel{
     /** Maximum internal difference within this segment */
     private double internalDiff;
     
+    private double avgGrayScale;
+    
     /** List of all pixels in this segment */
     private ArrayList<Pixel> pixels;
 
@@ -38,7 +40,7 @@ public class SuperPixel{
     public SuperPixel(Pixel root){
         this.meanRGB = new double[]{root.getRGB()[0], root.getRGB()[1], root.getRGB()[2]};
         this.pixels = new ArrayList<>();
-        this.pixels.addlast(root);
+        this.pixels.addLast(root);
         this.size++;
         this.root = root.getID();
     }
@@ -49,8 +51,9 @@ public class SuperPixel{
      * @param p the pixel to add to this segment
      */
     public void addPixel(Pixel p){
-        this.pixels.addlast(p);
+        this.pixels.addLast(p);
         calcMeanRGB(p);
+        calcAvgGray(p);
         this.size++;
     }
     
@@ -176,5 +179,12 @@ public class SuperPixel{
         for(int i = 0; i < 3; i++){
             meanRGB[i] = (meanRGB[i] + p.getRGB()[i]) / 2;
         }
+    }
+    
+    private void calcAvgGray(Pixel p)
+    {
+    	// Update average gray scale
+    	avgGrayScale = (avgGrayScale + p.getGray())/2;
+    	
     }
 }

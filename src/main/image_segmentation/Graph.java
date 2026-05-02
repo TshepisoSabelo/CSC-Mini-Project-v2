@@ -1,9 +1,8 @@
 package image_segmentation;
 import datastructures.UnionFind;
 import datastructures.ArrayList;
-import java.util.List;
-import java.util.Collections;
-import java.math.*;
+import datastructures.DoublyLinkedList;
+import datastructures.Node;
 
 /**
  * Represents an image as a graph structure for segmentation.
@@ -14,8 +13,8 @@ import java.math.*;
  */
 public class Graph {
 	private Pixel[][] image;
+	private DoublyLinkedList<SuperPixel> segments;
 	private ArrayList<Edge> edges;
-	private ArrayList<SuperPixel> segments;
 	int width;
 	int height;
 	
@@ -31,9 +30,17 @@ public class Graph {
 		this.height = height;
 		image = gridImage;
 		
-		segments = new ArrayList<>();
+		segments = new DoublyLinkedList<>();
 		edges = new ArrayList<>();
 	}
+	
+ 	public DoublyLinkedList<SuperPixel> getSegments() {
+ 		return segments;
+ 	}
+ 	
+ 	public ArrayList<Edge> getEdges(){
+ 		return edges;
+ 	}
 	
 	/**
 	 * Creates initial segments by assigning each pixel to its own region.
@@ -43,8 +50,8 @@ public class Graph {
 	public void createSegments() {
 		for(int i = 0; i< width; i++) {
 			for(int j = 0; j<height; j++) {
-				SuperPixel segment = new SuperPixel(image[i][j]);
-				segments.addlast(segment);
+				SuperPixel S = new SuperPixel(image[i][j]);
+				segments.addLast(S);
 			}
 		}
 	}
@@ -68,7 +75,7 @@ public class Graph {
 		            double w = diff(image[x][y], image[x+1][y]);
 		            Edge edge = new Edge(id1, id2);
 		            edge.setWeight(w);
-		            edges.addlast(edge);
+		            edges.addLast(edge);
 		        }
 		        
 		        //Add down node
@@ -77,7 +84,7 @@ public class Graph {
 		            double w = diff(image[x][y], image[x][y+1]);
 		            Edge edge = new Edge(id1, id2);
 		            edge.setWeight(w);
-		            edges.addlast(edge);
+		            edges.addLast(edge);
 		        }
 			}
 		}
@@ -96,22 +103,26 @@ public class Graph {
 	 * against a threshold derived from each segment's internal difference.</p>
 	 */
 	public void segmentation() {
-		UnionFind uf = new UnionFind(segments.size());
+		UnionFind uf = new UnionFind(segments.getSize());
 		
 		for(Edge e: edges) {
 			int[] vertices = e.getVertices();
 			SuperPixel S1 = null;
 			SuperPixel S2 = null;
-			for(SuperPixel S: segments) {
-				if(S.find(vertices[0])) {
+			Node<SuperPixel> S1_node = null;
+			Node<SuperPixel> S2_node = null;
+			
+			// Iterate through all segments to find those containing the edge vertices
+			for(SuperPixel S : segments) {
+				if(S != null && S.find(vertices[0])) {
 					S1 = S;
 				}
-				if(S.find(vertices[1])) {
+				if(S != null && S.find(vertices[1])) {
 					S2 = S;
 				}
 			}
 			
-			if(shouldMerge(S1, S2)) {
+			if(S1 != null && S2 != null && shouldMerge(S1, S2)) {
 				merge(S1, S2);
 				uf.union(vertices[0], vertices[1]);
 			}
@@ -126,21 +137,23 @@ public class Graph {
 	 *
 	 * @param S1 the first segment
 	 * @param S2 the second segment
+	 * @param S1_node the node containing S1
+	 * @param S2_node the node containing S2
 	 */
 	public void merge(SuperPixel S1, SuperPixel S2) {
-		// merge the smaller superPixel into the bigger superpixel and delete the other pixel
+		// merge the smaller superPixel into the bigger superpixel and delete the other node
 		if (S1.size() <= S2.size()) {
 			S2.addPixels(S1.getPixels());
-			segments.remove(S1);
-			
-		}
-		else {
+			Node<SuperPixel> node = new Node<>(S1);
+			segments.remove(node);
+		} else {
 			S1.addPixels(S2.getPixels());
-			segments.remove(S2);
+			Node<SuperPixel> node = new Node<>(S2);
+			segments.remove(node);
 		}
 	}
 
-	################helper methods################
+	///////////////////////////helper methods///////////////////////////
 	
 	/**
 	 * Computes the minimum connecting edge weight between two segments.
@@ -158,7 +171,7 @@ public class Graph {
 			for(Pixel s2_pixel: S2_pixels) {
 				if (isEdge(s1_pixel, s2_pixel) != -1) {
 					int index  = isEdge(s1_pixel, s2_pixel);
-					weights.addlast(edges.get(index).getWeight());
+					weights.addLast(edges.get(index).getWeight());
 				}
 			}
 		}
@@ -190,7 +203,7 @@ public class Graph {
 	 * @return threshold adjustment based on the segment size
 	 */
 	private double threshold(SuperPixel S) {
-		return (1.0 / S.size());
+		return (0.2 / S.size());
 	}
 	
 	/**

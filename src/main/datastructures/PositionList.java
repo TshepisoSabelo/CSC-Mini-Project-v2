@@ -1,40 +1,22 @@
 package datastructures;
+
 import java.util.Iterator;
 
-public class DoublyLinkedList<E> implements Iterable<E>{
+public class PositionList<E> implements Iterable<E>{
 
-	private class DLLIterator implements Iterator<E> {
-
-	    private Node<E> cursor = header.getNext(); // start at first real node
-
-	    @Override
-	    public boolean hasNext() {
-	        return cursor != trailer;
-	    }
-
-	    @Override
-	    public E next() {
-	        if (!hasNext()) {
-	            throw new java.util.NoSuchElementException("No more elements");
-	        }
-
-	        E element = cursor.getElement();
-	        cursor = cursor.getNext();
-	        return element;
-	    }
-	}
-	
 	private Node<E> header;
 	private Node<E> trailer;
 	private int size = 0;
+	private Node<E> current;
 
 	/**
 	 * This is the default constructor that initialises the header and trailer node
 	 */
-	public DoublyLinkedList() {
+	public PositionList() {
 		header = new Node<>();
 		trailer = new Node<>(null, header, null);
 		header.setNext(trailer);
+		current = header.getNext();
 	}
 
 	/**
@@ -60,13 +42,14 @@ public class DoublyLinkedList<E> implements Iterable<E>{
 	 * 
 	 * @return the first Element of the list
 	 */
-	public E first() {
+	public IPosition<E> first() {
 		if (this.isEmpty())
 			return null;
 
-		Node<E> first = header.getNext();
+		IPosition<E> first = (IPosition<E>) header.getNext();
+		
+		return first;
 
-		return first.getElement();
 	}
 
 	/**
@@ -74,13 +57,13 @@ public class DoublyLinkedList<E> implements Iterable<E>{
 	 * 
 	 * @return the last Element of the list
 	 */
-	public E last() {
+	public IPosition<E> last() {
 		if (this.isEmpty())
 			return null;
 
 		Node<E> last = trailer.getPrev();
 
-		return last.getElement();
+		return (IPosition<E>) last;
 	}
 
 	/**
@@ -121,7 +104,7 @@ public class DoublyLinkedList<E> implements Iterable<E>{
 	 * 
 	 * @return the element that was removed
 	 */
-	public E removeFirst() {
+	public IPosition<E> removeFirst() {
 		return remove(this.header.getNext());
 	}
 
@@ -130,7 +113,7 @@ public class DoublyLinkedList<E> implements Iterable<E>{
 	 * 
 	 * @return the element that was removed
 	 */
-	public E removeLast() {
+	public IPosition<E> removeLast() {
 		return remove(this.trailer.getPrev());
 	}
 
@@ -140,7 +123,7 @@ public class DoublyLinkedList<E> implements Iterable<E>{
 	 * @param node - The node to be removed
 	 * @return the element that was removed
 	 */
-	public E remove(Node<E> node) {
+	public IPosition<E> remove(Node<E> node) {
 		E element = node.getElement();
 
 		Node<E> prev = node.getPrev();
@@ -149,16 +132,38 @@ public class DoublyLinkedList<E> implements Iterable<E>{
 		prev.setNext(next);
 		next.setPrev(prev);
 
-		node = null;
-
 		size--;
 
-		return element;
+		return (IPosition<E>) node;
+	}
+	
+	/**
+	 * This method finds a specific element in the list
+	 * @param elem - The element to be found
+	 * @return the Node containing the element
+	 */
+	public IPosition<E> find(E elem)
+	{
+		Node<E> node = null;
+		Node<E> current = this.header.getNext();
+		for(int i = 0; i < size; i++)
+		{
+			if(current.getElement().equals(elem))
+			{
+				node= current;
+				break;
+			}
+			
+			current = current.getNext();
+		}
+		
+		return (IPosition<E>) node;
+		
 	}
 
 	@Override
 	public Iterator<E> iterator() {
-		return new DLLIterator();
-	}	
-
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

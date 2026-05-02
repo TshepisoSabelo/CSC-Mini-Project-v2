@@ -4,6 +4,7 @@ public class Pixel {
 	private int ID;
     private int x;
     private int y;
+    private double gray;
     private int[] RGB;
 
     /**
@@ -14,6 +15,7 @@ public class Pixel {
         this.x = 0;
         this.y = 0;
         this.ID = 0;
+        this.gray = 0;
         this.RGB = new int[]{0, 0, 0};
     }
     /**
@@ -28,6 +30,7 @@ public class Pixel {
         this.y = y;
         this.ID = y*255 + x;
         this.RGB = rgb;
+        this.gray = 0.299* RGB[0] + 0.587*RGB[1] + 0.114*RGB[2];
     }
 
     /**
@@ -37,6 +40,7 @@ public class Pixel {
      */
     public void setRGB(int[] rgb) {
         this.RGB = rgb;
+        this.gray = 0.299* RGB[0] + 0.587*RGB[1] + 0.114*RGB[2];
     }
 
     /**
@@ -66,6 +70,10 @@ public class Pixel {
      */
     public int[] getRGB() {
         return this.RGB;
+    }
+    
+    public double getGray() {
+    	return gray;
     }
     
     public int getID() {
