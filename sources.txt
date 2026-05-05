@@ -1,0 +1,16 @@
+src/main/datastructures/ArrayList.java
+src/main/datastructures/DoublyLinkedList.java
+src/main/datastructures/IList.java
+src/main/datastructures/IPosition.java
+src/main/datastructures/Iterator.java
+src/main/datastructures/Node.java
+src/main/datastructures/PositionList.java
+src/main/datastructures/UnionFind.java
+src/main/image_segmentation/Edge.java
+src/main/image_segmentation/Graph.java
+src/main/image_segmentation/Pixel.java
+src/main/image_segmentation/SuperPixel.java
+src/main/Main.java
+src/main/models/classificationModel.java
+src/main/preprocessing/Preprocessing.java
+src/test/Test.java

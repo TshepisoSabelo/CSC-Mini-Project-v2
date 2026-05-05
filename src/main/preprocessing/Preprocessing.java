@@ -65,7 +65,7 @@ public class Preprocessing<T>
 		//Read in all the images and store into  a list .
 
 		//create an array of files:
-		File[] array=new File(file).listFiles((dir, name) -> name.endsWith(".jpg")|| name.endsWith(".png"));
+		File[] array=new File(file).listFiles((dir, name) -> name.endsWith(".jpg")|| name.endsWith(".png") || name.endsWith(".jpeg"));
 		ArrayList<BufferedImage> listImagesList=new ArrayList<BufferedImage>();
 		int count=0;
 		for(File eachfile: array)
@@ -82,26 +82,23 @@ public class Preprocessing<T>
 	}
 	/**
 	 * Method to resize the image as 256x256 to ensure consistency in images 
-	 * @param list An array list of Buffered images
+	 * @param image Buffered image to be resized
 	 */
-	public  void resizeImage(ArrayList<BufferedImage> list)
+	public  BufferedImage resizeImage(BufferedImage image)
 	{
 		//image must be a 256x256 :
-		for(BufferedImage image: list)
+		
+		//check the size of the image first:
+		if(checksize(image))
 		{
-			//check the size of the image first:
-			if(checksize(image))
-			{
-				//skip this image
-					continue;
-			}
-			else 
-			{
+			return image;
+		}
+		else 
+		{
+			BufferedImage resized = BilinearInterpolation(image);
+			return resized;
+		}
 			
-				image=BilinearInterpolation(image);
-			}
-			
-		}	
 	}
 	
    /**
@@ -170,40 +167,28 @@ public class Preprocessing<T>
    
    public Pixel[][] ImageAs2DPixel(BufferedImage image)
    {
-	   int height=image.getHeight();
-	   int width=image.getWidth();
-	   //need an empty constructor for pixel:for now use null
-	   Pixel[][] PixelImage=new Pixel[width][height];
-	   for(int r=0;r<width;r++)
-	   {
-		for(int c=0;c<height;c++)
-		{
-			//intialise each pixel.
-			PixelImage[r][c]=new Pixel();
+       int height = image.getHeight();
+       int width = image.getWidth();
 
-		}
-	   }
-	   int[] RGB=new int[3];
-	   ColorModel cm=   image.getColorModel();
-	   for(int r=0;r<width;r++)
-	   {
-		   for(int c=0;c<height;c++)
-		   {
-			 int pixel=  image.getRGB(r, c);
-			 //Stored as Red ,Green,Blue
-			 RGB[0]=cm.getRed(pixel);
-			 RGB[1]=cm.getGreen(pixel);
-			 RGB[2]=cm.getBlue(pixel);
-			
-			 //set the rgb array for each pixel
-			 PixelImage[r][c].setRGB(RGB);
-			 //set the coordinates of each pixel:
-			 PixelImage[r][c].setCoodinate(r,c);
-			 //id is set automatically 1-n
-			 
-		   }
-	   }
-	   return PixelImage;
+       Pixel[][] PixelImage = new Pixel[height][width];
+
+       ColorModel cm = image.getColorModel();
+
+       for (int r = 0; r < height; r++) {
+           for (int c = 0; c < width; c++) {
+
+               int pixel = image.getRGB(c, r); // ⚠️ note (x, y) = (col, row)
+
+               int red   = cm.getRed(pixel);
+               int green = cm.getGreen(pixel);
+               int blue  = cm.getBlue(pixel);
+
+			   Pixel pixelObj = new Pixel(r, c, new int[]{red, green, blue});
+               PixelImage[r][c] = pixelObj;
+           }
+       }
+
+       return PixelImage;
    }
    //##################Helper Functions#######################
    
@@ -214,7 +199,7 @@ public class Preprocessing<T>
 	 */
   private  boolean checksize(BufferedImage image)
   {
-  	if(image.getWidth()==256 && image.getHeight()==256)
+  	if(image.getWidth()<=256 && image.getHeight()<=256)
   	{
   		return true ;
   	}

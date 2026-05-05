@@ -290,7 +290,7 @@ public class ArrayList<T> implements IList<T>, Iterable<T> {
 				@SuppressWarnings("unchecked")
 				T[] copy=(T[]) new Object[array.length*2];
 				//copy all items into the new array:
-				for(int c=0;c<array.length;c++)
+				for(int c=0; c<size; c++)
 				{
 					copy[c]=array[c];
 				}

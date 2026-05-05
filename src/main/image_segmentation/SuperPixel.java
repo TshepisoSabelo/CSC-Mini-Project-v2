@@ -76,29 +76,31 @@ public class SuperPixel{
     public double[] getMeanRGB() {
     	return meanRGB;
     }
+
+    
     
     /**
-     * Calculates the internal difference (maximum edge weight) within this segment.
+     * Calculates the internal difference (maximum weight of an edge fully inside this segment).
      * 
-     * <p>Searches for the first edge connected to this segment and uses its
-     * weight as the internal difference threshold.</p>
+     * <p>Scans the given edge list for edges whose both endpoints are contained in
+     * this segment, and returns the largest such weight. The provided list is not
+     * modified by this method.</p>
      * 
-     * @param edges the sorted list of edges in the graph
+     * @param edges the graph's edges
      * @return the internal difference threshold for this segment
      */
     public double internalDiff(ArrayList<Edge> edges) {
-    	//look for the first appearance of the first pixel in this segment
-    	//because the edges are sorted by weight
-    	edges.reverse();
-    	for(Edge e: edges) {
-    		int[] vertices = e.getVertices();
-    		if(pixels.get(0).getID() == vertices[0] || pixels.get(0).getID() == vertices[1]) {
-    			internalDiff = e.getWeight();
-    		}
-    	}
-    	return internalDiff;
+        double maxWeight = 0.0;
+        for (Edge e : edges) {
+            int[] vertices = e.getVertices();
+            if (find(vertices[0]) && find(vertices[1])) {
+                maxWeight = Math.max(maxWeight, e.getWeight());
+            }
+        }
+        this.internalDiff = maxWeight;
+        return this.internalDiff;
     }
-    
+
     /**
      * Returns the number of pixels in this segment.
      * 
@@ -106,15 +108,6 @@ public class SuperPixel{
      */
     public int size() {
     	return this.size;
-    }
-    
-    /**
-     * Returns the internal difference threshold of this segment.
-     * 
-     * @return the internal difference value
-     */
-    public double getInternalDiff() {
-    	return this.internalDiff;
     }
     
     /**

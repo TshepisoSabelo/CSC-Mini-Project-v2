@@ -1,8 +1,10 @@
 package image_segmentation;
 import datastructures.UnionFind;
+
+import java.util.HashMap;
+
 import datastructures.ArrayList;
 import datastructures.DoublyLinkedList;
-import datastructures.Node;
 
 /**
  * Represents an image as a graph structure for segmentation.
@@ -29,7 +31,6 @@ public class Graph {
 		this.width = width;
 		this.height = height;
 		image = gridImage;
-		
 		segments = new DoublyLinkedList<>();
 		edges = new ArrayList<>();
 	}
@@ -48,8 +49,8 @@ public class Graph {
 	 * starts as its own individual segment.
 	 */
 	public void createSegments() {
-		for(int i = 0; i< width; i++) {
-			for(int j = 0; j<height; j++) {
+		for(int i = 0; i< height; i++) {
+			for(int j = 0; j<width; j++) {
 				SuperPixel S = new SuperPixel(image[i][j]);
 				segments.addLast(S);
 			}
@@ -64,15 +65,15 @@ public class Graph {
 	 * <p>After all edges are created, they are sorted and reversed so that
 	 * higher-weight edges appear first in the list.</p>
 	 */
-	public void createEdges() {
+public void createEdges() {
 		for(int y = 0; y< height; y++) {
 			for(int x = 0; x<width; x++) {
 				int id1 = image[y][x].getID();
 				
 				//Add right node
 		        if (x < width - 1) {
-		            int id2 = image[x+1][y].getID();
-		            double w = diff(image[x][y], image[x+1][y]);
+					int id2 = image[y][x + 1].getID();
+					double w = diff(image[y][x], image[y][x + 1]);
 		            Edge edge = new Edge(id1, id2);
 		            edge.setWeight(w);
 		            edges.addLast(edge);
@@ -91,157 +92,134 @@ public class Graph {
 		
 		edges.sort();
 	}
+
 	
 /**
 	 * Performs image segmentation by merging adjacent regions.
 	 *
-	 * <p>Edges are processed in the order defined by {@link #createEdges()};
-	 * in the current implementation the list is reversed after sorting,
-	 * so higher-weight edges are visited first.</p>
+	 * <p>Processes edges in weight order, merging adjacent segments if their
+	 * boundary weight is below the merge threshold. Continues until either
+	 * all possible merges are completed or n segments remain.</p>
 	 *
-	 * <p>The merge decision compares the boundary weight between two segments
-	 * against a threshold derived from each segment's internal difference.</p>
+	 * @param n the number of segmentation iterations to perform
 	 */
 	public void segmentation() {
-		UnionFind uf = new UnionFind(segments.getSize());
-		
-		for(Edge e: edges) {
+		UnionFind uf = new UnionFind(width * height);
+
+		int totalPixels = width * height;
+		int[] size = new int[totalPixels];
+		double[] internalDiff = new double[totalPixels];
+
+		for (int i = 0; i < totalPixels; i++) {
+			size[i] = 1;
+			internalDiff[i] = 0.0;
+		}
+
+		for (Edge e : edges) {
 			int[] vertices = e.getVertices();
-			SuperPixel S1 = null;
-			SuperPixel S2 = null;
-			Node<SuperPixel> S1_node = null;
-			Node<SuperPixel> S2_node = null;
-			
-			// Iterate through all segments to find those containing the edge vertices
-			for(SuperPixel S : segments) {
-				if(S != null && S.find(vertices[0])) {
-					S1 = S;
-				}
-				if(S != null && S.find(vertices[1])) {
-					S2 = S;
-				}
+
+			int root1 = uf.find(vertices[0]);
+			int root2 = uf.find(vertices[1]);
+
+			if (root1 == root2) {
+				continue;
 			}
-			
-			if(S1 != null && S2 != null && shouldMerge(S1, S2)) {
-				merge(S1, S2);
-				uf.union(vertices[0], vertices[1]);
+
+			double edgeWeight = e.getWeight();
+
+			double threshold1 = internalDiff[root1] + threshold(size[root1]);
+			double threshold2 = internalDiff[root2] + threshold(size[root2]);
+
+			if (edgeWeight <= Math.min(threshold1, threshold2)) {
+				uf.union(root1, root2);
+
+				int newRoot = uf.find(root1);
+				int oldRoot = newRoot == root1 ? root2 : root1;
+
+				size[newRoot] += size[oldRoot];
+				internalDiff[newRoot] = edgeWeight;
 			}
 		}
-	}
-	
-	/**
-	 * Merges two segments into a single segment.
-	 *
-	 * <p>The smaller {@link SuperPixel} is absorbed into the larger one,
-	 * and the merged-away segment is removed from the active list.</p>
-	 *
-	 * @param S1 the first segment
-	 * @param S2 the second segment
-	 * @param S1_node the node containing S1
-	 * @param S2_node the node containing S2
-	 */
-	public void merge(SuperPixel S1, SuperPixel S2) {
-		// merge the smaller superPixel into the bigger superpixel and delete the other node
-		if (S1.size() <= S2.size()) {
-			S2.addPixels(S1.getPixels());
-			Node<SuperPixel> node = new Node<>(S1);
-			segments.remove(node);
-		} else {
-			S1.addPixels(S2.getPixels());
-			Node<SuperPixel> node = new Node<>(S2);
-			segments.remove(node);
-		}
+
+		 segments = buildSuperPixels(uf);
 	}
 
-	///////////////////////////helper methods///////////////////////////
-	
-	/**
-	 * Computes the minimum connecting edge weight between two segments.
-	 *
-	 * @param S1 the first segment
-	 * @param S2 the second segment
-	 * @return the smallest edge weight linking pixels in the two segments
-	 */
-	private double segmentDiff(SuperPixel S1, SuperPixel S2) {
-		ArrayList<Pixel> S1_pixels = S1.getPixels();
-		ArrayList<Pixel> S2_pixels = S2.getPixels();
-		ArrayList<Double> weights = new ArrayList<>(); //weights of connected edges between the two segments
-		
-		for(Pixel s1_pixel: S1_pixels) {
-			for(Pixel s2_pixel: S2_pixels) {
-				if (isEdge(s1_pixel, s2_pixel) != -1) {
-					int index  = isEdge(s1_pixel, s2_pixel);
-					weights.addLast(edges.get(index).getWeight());
+	private DoublyLinkedList<SuperPixel> buildSuperPixels(UnionFind uf) {
+		HashMap<Integer, SuperPixel> map = new HashMap<>();
+
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				Pixel p = image[y][x];
+				int root = uf.find(p.getID());
+
+				if (!map.containsKey(root)) {
+					map.put(root, new SuperPixel(p));
 				}
+
+				map.get(root).addPixel(p);
 			}
 		}
-		
-		weights.reverse();
-		double minWeight = weights.get(0);
-		return minWeight;
-	}
-	
-	/**
-	 * Determines whether two segments should be merged.
-	 *
-	 * @param S1 the first segment
-	 * @param S2 the second segment
-	 * @return true if the boundary between segments is below the merge threshold
-	 */
-	private boolean shouldMerge(SuperPixel S1, SuperPixel S2) {
-		double mInt = Math.min(S1.getInternalDiff() + threshold(S1), S2.getInternalDiff() + threshold(S2));
-		if(segmentDiff(S1, S2) <= mInt) {
-			return true;
+
+		DoublyLinkedList<SuperPixel> result = new DoublyLinkedList<>();
+		for (SuperPixel sp : map.values()) {
+			result.addLast(sp);
 		}
-		return false;
+
+		return result;
 	}
 	
+
+	///////////////////////////helper methods///////////////////////////
 	/**
 	 * Computes the merge threshold for a segment.
 	 *
 	 * @param S the segment
 	 * @return threshold adjustment based on the segment size
 	 */
-	private double threshold(SuperPixel S) {
-		return (0.2 / S.size());
+	private double threshold(int size) {
+	    double k = 0.8;   // tunable constant
+	    return k / size;
 	}
 	
-	/**
-	 * Returns the index of the edge connecting two pixels, if one exists.
-	 *
-	 * @param p1 the first pixel
-	 * @param p2 the second pixel
-	 * @return edge index or -1 when no connecting edge is found
-	 */
-	private int isEdge(Pixel p1, Pixel p2) {
-		for(int i = 0; i< edges.size(); i++) {
-			if (edges.get(i).checkEdge(p1.getID(), p2.getID())){
-				return i;
+
+	private double segmentDiff(SuperPixel S1, SuperPixel S2) {
+		double minWeight = Double.POSITIVE_INFINITY;
+		for (Edge edge : edges) {
+			int[] vertices = edge.getVertices();
+			boolean endpointsAcrossSegments =
+				(S1.find(vertices[0]) && S2.find(vertices[1])) ||
+				(S1.find(vertices[1]) && S2.find(vertices[0]));
+			if (endpointsAcrossSegments) {
+				minWeight = Math.min(minWeight, edge.getWeight());
 			}
 		}
-		return -1;
+		return minWeight == Double.POSITIVE_INFINITY ? Double.MAX_VALUE : minWeight;
 	}
-	/**
-	 * Calculates the Euclidean distance between two pixels based on their
-	 * coordinates and RGB color values. This distance is used as the weight
-	 * for edges connecting the pixels.
-	 * @param p1 the first pixel
-	 * @param p2 the second pixel
-	 * @return the Euclidean distance between the two pixels
-	 */
+
+	private void merge(SuperPixel S1, SuperPixel S2) {
+		// merge the smaller superPixel into the bigger superpixel and delete the other node
+		if (S1.size() <= S2.size()) {
+			S2.addPixels(S1.getPixels());
+			segments.remove(S1);
+			System.out.println("Merged segment " + S1.getRoot() + " into segment " + S2.getRoot());
+		} else {
+			S1.addPixels(S2.getPixels());
+			segments.remove(S2);
+			System.out.println("Merged segment " + S2.getRoot() + " into segment " + S1.getRoot());
+		}
+	}
+	
+
 	private double diff(Pixel p1, Pixel p2) {
-		int p1_x = p1.getCoordinate()[0];
-		int p2_x = p2.getCoordinate()[0];
-		int p1_y = p1.getCoordinate()[1];
-		int p2_y = p2.getCoordinate()[1];
-		int[] p1_RGB = p1.getRGB();
-		int[] p2_RGB = p2.getRGB();
-		
-		double diff = Math.sqrt((p1_x - p2_x)^2 + 
-								(p1_y - p2_y)^2 +
-								(p1_RGB[0] - p2_RGB[0])^2 +
-								(p1_RGB[1] - p2_RGB[1])^2 +
-								(p1_RGB[2] - p2_RGB[2])^2);
-		return diff;
+		int[] rgb1 = p1.getRGB();
+		int[] rgb2 = p2.getRGB();
+
+		int dr = rgb1[0] - rgb2[0];
+		int dg = rgb1[1] - rgb2[1];
+		int db = rgb1[2] - rgb2[2];
+
+		double distSq = dr * dr + dg * dg + db * db;
+
+		return distSq / (256.0 * 256.0 * 3); // normalize
 	}
 }

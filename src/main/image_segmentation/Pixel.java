@@ -28,7 +28,7 @@ public class Pixel {
     public Pixel(int x, int y, int[] rgb) {
         this.x = x;
         this.y = y;
-        this.ID = y*255 + x;
+        this.ID = y*256 + x;
         this.RGB = rgb;
         this.gray = 0.299* RGB[0] + 0.587*RGB[1] + 0.114*RGB[2];
     }

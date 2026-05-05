@@ -22,7 +22,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UI extends Application
+public class userinterface extends Application
 {
 	GridPane gpane = new GridPane();
 	private List<File> selectedFiles = new ArrayList<>();

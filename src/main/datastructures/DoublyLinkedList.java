@@ -156,6 +156,24 @@ public class DoublyLinkedList<E> implements Iterable<E>{
 		return element;
 	}
 
+	/**
+	 * Removes the first occurrence of the specified element from this list.
+	 * 
+	 * @param element the element to be removed
+	 * @return true if the element was removed, false otherwise
+	 */
+	public boolean remove(E element) {
+		Node<E> current = header.getNext();
+		while (current != trailer) {
+			if (current.getElement().equals(element)) {
+				remove(current);
+				return true;
+			}
+			current = current.getNext();
+		}
+		return false;
+	}
+
 	@Override
 	public Iterator<E> iterator() {
 		return new DLLIterator();
