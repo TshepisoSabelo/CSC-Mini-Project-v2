@@ -1,10 +1,16 @@
 src/main/datastructures/ArrayList.java
+src/main/datastructures/Dictionary.java
 src/main/datastructures/DoublyLinkedList.java
+src/main/datastructures/Entry.java
+src/main/datastructures/IDictionary.java
+src/main/datastructures/IEntry.java
 src/main/datastructures/IList.java
 src/main/datastructures/IPosition.java
 src/main/datastructures/Iterator.java
 src/main/datastructures/Node.java
+src/main/datastructures/Position.java
 src/main/datastructures/PositionList.java
+src/main/datastructures/PositionsList.java
 src/main/datastructures/UnionFind.java
 src/main/image_segmentation/Edge.java
 src/main/image_segmentation/Graph.java

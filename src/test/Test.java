@@ -15,7 +15,7 @@ public class Test {
 
             System.out.println("Image was read! :D");
             // Take first image
-            BufferedImage img = images.get(0);
+            BufferedImage img = images.get(2);
 
             img = prep.resizeImage(img); //resize the image to 256x256
 
@@ -51,7 +51,7 @@ public class Test {
             System.out.println(graph.getEdges().size() + " edges were created! :D");
 
             System.out.println("Image segmentation in process...");
-            graph.segmentation();  // Perform 2 iterations of segmentation
+            graph.segmentation(); 
             
 
             // STEP 5: Print superpixels
@@ -61,7 +61,7 @@ public class Test {
                 int id = sp.getRoot();
                 double[] rgb = sp.getMeanRGB();
 
-                //System.out.println( "ID: " + id + " | Mean RGB: (" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ")");
+                System.out.println( "ID: " + id + " | Mean RGB: (" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ")");
             }
 
             // STEP 6: Print connections between superpixels
@@ -88,6 +88,7 @@ public class Test {
             //     }
             // }
             System.out.println("Final number of Superpixels: " + graph.getSegments().getSize());
+            System.out.println("Final number of Edges: " + graph.getEdges().size());
             System.out.println("Test Completed Successfully! :D");
 
         } catch (Exception e) {

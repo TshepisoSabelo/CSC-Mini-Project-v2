@@ -1,8 +1,8 @@
 package image_segmentation;
 import datastructures.UnionFind;
-
-import java.util.HashMap;
-
+import datastructures.Dictionary;
+import datastructures.IEntry;
+import java.util.Iterator;
 import datastructures.ArrayList;
 import datastructures.DoublyLinkedList;
 
@@ -19,6 +19,7 @@ public class Graph {
 	private ArrayList<Edge> edges;
 	int width;
 	int height;
+	double K = 100; // tunable constant for threshold function
 	
 	/**
 	 * Constructs a new Graph with the given image grid.
@@ -142,27 +143,42 @@ public void createEdges() {
 		}
 
 		 segments = buildSuperPixels(uf);
+		 edges = buildSuperPixelEdges(uf);
 	}
 
-	private DoublyLinkedList<SuperPixel> buildSuperPixels(UnionFind uf) {
-		HashMap<Integer, SuperPixel> map = new HashMap<>();
+	private DoublyLinkedList<SuperPixel> buildSuperPixels(UnionFind uf)
+	{
+		Dictionary<Integer, SuperPixel> map = new Dictionary<>(0);
 
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
+		for(int y = 0; y < height; y++)
+		{
+			for(int x = 0; x < width; x++)
+			{
 				Pixel p = image[y][x];
 				int root = uf.find(p.getID());
 
-				if (!map.containsKey(root)) {
-					map.put(root, new SuperPixel(p));
-				}
+				IEntry<Integer, SuperPixel> entry = map.find(root);
 
-				map.get(root).addPixel(p);
+				if(entry == null)
+				{
+					SuperPixel sp = new SuperPixel(p);
+					map.insert(root, sp);
+				}
+				else
+				{
+					entry.getValue().addPixel(p);
+				}
 			}
 		}
 
 		DoublyLinkedList<SuperPixel> result = new DoublyLinkedList<>();
-		for (SuperPixel sp : map.values()) {
-			result.addLast(sp);
+
+		Iterator<IEntry<Integer, SuperPixel>> iterator = map.entries();
+
+		while(iterator.hasNext())
+		{
+			IEntry<Integer, SuperPixel> entry = iterator.next();
+			result.addLast(entry.getValue());
 		}
 
 		return result;
@@ -177,8 +193,7 @@ public void createEdges() {
 	 * @return threshold adjustment based on the segment size
 	 */
 	private double threshold(int size) {
-	    double k = 100;   // tunable constant
-	    return k / size;
+	    return K / size;
 	}
 	
 
@@ -221,5 +236,48 @@ public void createEdges() {
 		double distSq = dr * dr + dg * dg + db * db;
 
 		return distSq / (256.0 * 256.0 * 3); // normalize
+	}
+
+	private ArrayList<Edge> buildSuperPixelEdges(UnionFind uf) {
+		Dictionary<String, Edge> uniqueEdges = new Dictionary<>(edges.size());
+
+		for (Edge e : edges) {
+			int[] vertices = e.getVertices();
+
+			int root1 = uf.find(vertices[0]);
+			int root2 = uf.find(vertices[1]);
+
+			if (root1 == root2) {
+				continue;
+			}
+
+			int a = Math.min(root1, root2);
+			int b = Math.max(root1, root2);
+
+			String key = a + "-" + b;
+
+			IEntry<String, Edge> entry = uniqueEdges.find(key);
+
+			if (entry == null) {
+				Edge superEdge = new Edge(a, b);
+				superEdge.setWeight(e.getWeight());
+				uniqueEdges.insert(key, superEdge);
+			} else {
+				Edge existing = entry.getValue();
+				if (e.getWeight() < existing.getWeight()) {
+					existing.setWeight(e.getWeight());
+					uniqueEdges.replace(key, existing);
+				}
+			}
+		}
+
+		ArrayList<Edge> result = new ArrayList<>();
+		Iterator<IEntry<String, Edge>> iterator = uniqueEdges.entries();
+
+		while (iterator.hasNext()) {
+			IEntry<String, Edge> entry = iterator.next();
+			result.addLast(entry.getValue());
+		}
+		return result;
 	}
 }
