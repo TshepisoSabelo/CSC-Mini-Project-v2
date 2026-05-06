@@ -124,22 +124,19 @@ public class ArrayList<T> implements IList<T>, Iterable<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public void add(int i, T item) throws IndexOutOfBoundsException
-	{
-		//check the index that was added:
-		if(i<0 || i>size)
-			   throw new IndexOutOfBoundsException("Index is out of bounds");
-		//check if the array is full or not:
-		if(size==array.length)
-		{
-			//increase the size of the array:Doubling strategy 
-			T[] copy=(T[]) new Object[array.length*2];
-			//copy all items into the new array:
-			for(int c=0;c<array.length;c++)
-			{
-				copy[c]=array[c];
+	public void add(int i, T item) throws IndexOutOfBoundsException {
+		// check the index that was added:
+		if (i < 0 || i > size)
+			throw new IndexOutOfBoundsException("Index is out of bounds");
+		// check if the array is full or not:
+		if (size == array.length) {
+			// increase the size of the array:Doubling strategy
+			T[] copy = (T[]) new Object[array.length * 2];
+			// copy all items into the new array:
+			for (int c = 0; c < array.length; c++) {
+				copy[c] = array[c];
 			}
-			array=copy;
+			array = copy;
 		}
 		// shift elements to the right .
 		for (int k = size - 1; k >= i; k--) {
@@ -197,58 +194,43 @@ public class ArrayList<T> implements IList<T>, Iterable<T> {
 	 * This method sorts the elements in the array using the bubble sort algorithm
 	 */
 	public void sort() {
-    for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size - 1; j++) {
-            Comparable current = (Comparable) array[j];
-            Comparable next = (Comparable) array[j + 1];
+		mergeSort(0, size - 1);
+	}
 
-            if (current.compareTo(next) > 0) {
-                T temp = array[j];
-                array[j] = array[j + 1];
-                array[j + 1] = temp;
-            }
-         }
-      }
-   }
-
-   /**
-	 * This method reverses the order of elements in the array 
+	/**
+	 * This method reverses the order of elements in the array
 	 */
 
-	public void reverse()
-	{
+	public void reverse() {
 		for (int i = 0; i < size / 2; i++) {
 			T temp = array[i];
-            array[i] = array[size - 1 - i];
-            array[size - 1 - i] = temp;
+			array[i] = array[size - 1 - i];
+			array[size - 1 - i] = temp;
 		}
-    
+
 	}
-	
-	 /**
-	    * Method to add an item to the end of the list 
-	    * @param item The item that will be added to the end of the list 
-	    */
-	    public void addLast(T item)
-	    {
-	    	//increase size 
-	        if(size==array.length)
-	        {
-	        	increaseSizeOfArray();
-	        }
-	        array[size]=item ;
-	        size++;
-	        
-	    }
+
+	/**
+	 * Method to add an item to the end of the list
+	 * 
+	 * @param item The item that will be added to the end of the list
+	 */
+	public void addLast(T item) {
+		// increase size
+		if (size == array.length) {
+			increaseSizeOfArray();
+		}
+		array[size] = item;
+		size++;
+
+	}
 
 	@Override
 	public String toString() {
 		return "List [array=" + Arrays.toString(array) + ", size=" + size + "]";
 	}
-	
 
-
-	//helper functions
+	// helper functions
 	/**
 	 * Creates the internal array with the specified size.
 	 * 
@@ -280,22 +262,70 @@ public class ArrayList<T> implements IList<T>, Iterable<T> {
 
 		size--;
 	}
-	
+
 	/**
 	 * Method uses a doubling strategy to increase the size of the array
 	 */
-	private void increaseSizeOfArray()
-	{
-		//increase the size of the array:Doubling strategy 
-				@SuppressWarnings("unchecked")
-				T[] copy=(T[]) new Object[array.length*2];
-				//copy all items into the new array:
-				for(int c=0; c<size; c++)
-				{
-					copy[c]=array[c];
-				}
-				array=copy;
+	private void increaseSizeOfArray() {
+		// increase the size of the array:Doubling strategy
+		@SuppressWarnings("unchecked")
+		T[] copy = (T[]) new Object[array.length * 2];
+		// copy all items into the new array:
+		for (int c = 0; c < array.length; c++) {
+			copy[c] = array[c];
+		}
+		array = copy;
 	}
 
+	private void mergeSort(int left, int right) {
+		
+		if (left >= right) return;
+
+	    int mid = (left + right) / 2;
+
+	    mergeSort(left, mid);
+	    mergeSort(mid + 1, right);
+
+	    merge(left, mid, right);
+
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void merge(int left, int mid, int right) {
+	    int n1 = mid - left + 1;
+	    int n2 = right - mid;
+
+	    Object[] leftArr = new Object[n1];
+	    Object[] rightArr = new Object[n2];
+
+	    // copy data
+	    for (int i = 0; i < n1; i++)
+	        leftArr[i] = array[left + i];
+
+	    for (int j = 0; j < n2; j++)
+	        rightArr[j] = array[mid + 1 + j];
+
+	    int i = 0, j = 0, k = left;
+
+	    while (i < n1 && j < n2) {
+	        Comparable leftVal = (Comparable) leftArr[i];
+	        Comparable rightVal = (Comparable) rightArr[j];
+
+	        if (leftVal.compareTo(rightVal) <= 0) {
+	            array[k++] = (T) leftArr[i++];
+	        } else {
+	            array[k++] = (T) rightArr[j++];
+	        }
+	    }
+
+	    // leftover elements
+	    while (i < n1) {
+	        array[k++] = (T) leftArr[i++];
+	    }
+
+	    while (j < n2) {
+	        array[k++] = (T) rightArr[j++];
+	    }
+	}
 
 }
