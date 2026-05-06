@@ -177,7 +177,7 @@ public void createEdges() {
 	 * @return threshold adjustment based on the segment size
 	 */
 	private double threshold(int size) {
-	    double k = 0.8;   // tunable constant
+	    double k = 100;   // tunable constant
 	    return k / size;
 	}
 	
