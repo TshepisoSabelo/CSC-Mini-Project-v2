@@ -76,6 +76,13 @@ public class GraphSummariser {
 		this.target = target;
 	}
 
+	public GraphSummariser(Graph graph, int target) {
+		this(graph);
+		this.target = target;
+		
+		// TODO Auto-generated constructor stub
+	}
+
 	// just for testing
 	public static ArrayList<GraphSummariser> readFromCSV(String filename) {
 		ArrayList<GraphSummariser> data = new ArrayList<>();
@@ -129,13 +136,13 @@ public class GraphSummariser {
 		try (PrintWriter txtout = new PrintWriter(new FileOutputStream(file, true))) {
 			if (!file.exists() || file.length() == 0) {
 				txtout.println(
-						"numNodes,numEdges,avgDegree,minDegree,maxDegree,stdR, stdG,stdB,avgR,avgG,avgB,avgTexture,avgEdgeWeight,minEdgeWeight,maxEdgeWeight,stdtexture");
+						"numNodes,numEdges,avgDegree,minDegree,maxDegree,stdR, stdG,stdB,avgR,avgG,avgB,avgTexture,avgEdgeWeight,minEdgeWeight,maxEdgeWeight,stdtexture,target");
 			}
 
 			txtout.println(numNodes + "," + numEdges + "," + avgDegree + "," + minDegree + "," + maxDegree + ","
 					+ stdRGB[0] + "," + stdRGB[1] + "," + stdRGB[2] + "," + avgRGB[0] + "," + avgRGB[1] + ","
 					+ avgRGB[2] + "," + avgTexture + "," + avgEdgeWeight + "," + minEdgeWeight + "," + maxEdgeWeight
-					+ "," + stdtexture);
+					+ "," + stdtexture +"target" + target);
 
 		} catch (FileNotFoundException fnfex) {
 			fnfex.printStackTrace();
@@ -319,7 +326,10 @@ public class GraphSummariser {
 			max = Math.max(current, max);
 		}
 
+		if(numEdges !=0)
 		avgEdgeWeight = sum / numEdges;
+		else 
+			avgEdgeWeight =0;
 		minEdgeWeight = min;
 		maxEdgeWeight = max;
 	}
