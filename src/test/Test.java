@@ -1,6 +1,7 @@
 import preprocessing.Preprocessing;
 import image_segmentation.*;
 import datastructures.ArrayList;
+import Transformer.GraphSummariser;
 
 import java.awt.image.BufferedImage;
 
@@ -15,7 +16,7 @@ public class Test {
 
             System.out.println("Image was read! :D");
             // Take first image
-            BufferedImage img = images.get(2);
+            BufferedImage img = images.get(0);
 
             img = prep.resizeImage(img); //resize the image to 256x256
 
@@ -51,8 +52,15 @@ public class Test {
             System.out.println(graph.getEdges().size() + " edges were created! :D");
 
             System.out.println("Image segmentation in process...");
-            graph.segmentation(); 
-            
+            graph.segmentation();
+
+            System.out.println("Summarising the graph...");
+            GraphSummariser summariser = new GraphSummariser(graph);
+
+            System.out.println("Generating CSV...");
+            summariser.generateCSV();
+
+            System.out.println("CSV generated! :D");
 
             // STEP 5: Print superpixels
             System.out.println("===== SUPERPIXELS =====");

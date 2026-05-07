@@ -183,7 +183,6 @@ public void createEdges() {
 
 		return result;
 	}
-	
 
 	///////////////////////////helper methods///////////////////////////
 	/**

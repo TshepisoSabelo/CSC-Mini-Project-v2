@@ -158,6 +158,10 @@ public class SuperPixel{
     public int getRoot() {
     	return this.root;
     }
+
+    public double getAvgGrayScale() {
+    	return this.avgGrayScale;
+    }
     
     /**
      * Helper function to calculate the updated mean RGB values.

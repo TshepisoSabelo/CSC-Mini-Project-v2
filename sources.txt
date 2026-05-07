@@ -19,4 +19,5 @@ src/main/image_segmentation/SuperPixel.java
 src/main/Main.java
 src/main/models/classificationModel.java
 src/main/preprocessing/Preprocessing.java
+src/main/Transformer/GraphSummariser.java
 src/test/Test.java
